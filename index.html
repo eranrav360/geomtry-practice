@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מבחן אינטראקטיבי – משפטים בגיאומטריה</title>
+<style>
+  :root{
+    --bg:#F7F6F3;
+    --card:#FFFFFF;
+    --ink:#242321;
+    --muted:#6B6863;
+    --line:#E7E4DD;
+    --good:#2E7D32;
+    --good-bg:#E9F5EA;
+    --bad:#C0392B;
+    --bad-bg:#FBEAE8;
+    --topic:#4472C4;
+    --topic-bg:#4472C41A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:"Segoe UI","Heebo",Arial,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:620px;
+  }
+  .masthead{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .masthead h1{
+    font-size:26px;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .masthead p{
+    margin:0;
+    color:var(--muted);
+    font-size:15px;
+  }
+  .dots{
+    display:flex;
+    justify-content:center;
+    gap:5px;
+    margin:16px 0 0;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:#D8D5CD;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:30px 28px 26px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+
+  /* ---------- start screen ---------- */
+  .start-card{ text-align:center; padding:44px 28px; }
+  .start-card .big-num{
+    font-size:56px;
+    font-weight:700;
+    line-height:1;
+    margin-bottom:4px;
+    background:linear-gradient(135deg,#4472C4,#7030A0);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .start-card .big-label{ color:var(--muted); font-size:15px; margin-bottom:26px; }
+  .topic-chips{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:30px;
+  }
+  .chip{
+    font-size:12.5px;
+    padding:6px 12px;
+    border-radius:999px;
+    color:#fff;
+    font-weight:600;
+  }
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    font-family:inherit; font-size:16px; font-weight:600;
+    border-radius:12px;
+    padding:14px 28px;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .btn:active{ transform:scale(.98); }
+  .btn-primary{
+    background:var(--ink); color:#fff; width:100%;
+  }
+  .btn-primary:hover{ opacity:.9; }
+  .btn-ghost{
+    background:transparent; color:var(--ink); border:1.5px solid var(--line);
+  }
+
+  /* ---------- progress ---------- */
+  .progress-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .qcount{ font-size:13px; color:var(--muted); font-weight:600; }
+  .topic-pill{
+    font-size:12.5px; font-weight:700; color:#fff;
+    padding:5px 13px; border-radius:999px;
+  }
+  .progress-track{
+    height:5px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%; border-radius:4px;
+    transition:width .35s ease, background .35s ease;
+  }
+
+  .question{
+    font-size:20px;
+    font-weight:600;
+    line-height:1.5;
+    margin:0 0 22px;
+  }
+
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .option{
+    text-align:right;
+    background:#FAFAF8;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:15.5px;
+    font-family:inherit;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .option:hover:not(.locked){ border-color:#B9C4E0; background:#F2F4FA; }
+  }
+  .option:focus{ outline:none; }
+  .option:focus-visible{ outline:2px solid #B9C4E0; outline-offset:2px; }
+  .option .letter{
+    width:26px;height:26px;border-radius:50%;
+    background:#EEEDE8; color:var(--muted);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px; font-weight:700; flex-shrink:0;
+  }
+  .option-text{ flex:1; }
+  .option.correct{ background:var(--good-bg); border-color:var(--good); }
+  .option.correct .letter{ background:var(--good); color:#fff; }
+  .option.wrong{ background:var(--bad-bg); border-color:var(--bad); }
+  .option.wrong .letter{ background:var(--bad); color:#fff; }
+  .option.locked{ cursor:default; }
+  .option.dim{ opacity:.55; }
+
+  .explain{
+    margin-top:18px;
+    padding:14px 16px;
+    border-radius:12px;
+    font-size:14.5px;
+    line-height:1.55;
+    display:none;
+  }
+  .explain.show{ display:block; animation:fadeIn .25s ease; }
+  .explain.good{ background:var(--good-bg); color:#1E5A22; }
+  .explain.bad{ background:var(--bad-bg); color:#8C2E22; }
+  .explain b{ display:block; margin-bottom:3px; }
+
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);} }
+
+  .next-row{ margin-top:22px; display:none; }
+  .next-row.show{ display:block; }
+  .nav-row{ display:flex; gap:10px; align-items:stretch; }
+  .nav-row .btn-primary{ flex:1; width:auto; }
+  .nav-row .btn-ghost{ flex:0 0 auto; white-space:nowrap; }
+
+  /* ---------- results ---------- */
+  .results{ text-align:center; }
+  .score-circle{
+    width:132px; height:132px; border-radius:50%;
+    margin:6px auto 18px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    background:conic-gradient(var(--ink) calc(var(--pct)*1%), #EEEDE8 0);
+  }
+  .score-circle-inner{
+    width:104px;height:104px;border-radius:50%;background:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .score-circle-inner .pct{ font-size:26px; font-weight:700; }
+  .score-circle-inner .frac{ font-size:12px; color:var(--muted); }
+  .results h2{ margin:0 0 4px; font-size:21px; }
+  .results .msg{ color:var(--muted); font-size:14.5px; margin-bottom:26px; }
+
+  .topic-breakdown{ text-align:right; margin-bottom:28px; }
+  .tb-row{
+    display:flex; align-items:center; gap:10px; margin-bottom:9px; font-size:13.5px;
+  }
+  .tb-name{ width:150px; flex-shrink:0; color:var(--ink); font-weight:600; }
+  .tb-bar-track{ flex:1; height:8px; background:#EFEEEA; border-radius:5px; overflow:hidden; }
+  .tb-bar-fill{ height:100%; border-radius:5px; }
+  .tb-frac{ width:34px; flex-shrink:0; text-align:left; color:var(--muted); font-size:12.5px; }
+
+  .btn-row{ display:flex; gap:10px; }
+  .btn-row .btn{ flex:1; }
+
+  footer.hint{
+    text-align:center; color:var(--muted); font-size:12.5px; margin-top:18px;
+  }
+
+  @media (max-width:480px){
+    .card{ padding:24px 18px 22px; }
+    .question{ font-size:18px; }
+    .start-card .big-num{ font-size:44px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <h1>מבחן אינטראקטיבי – משפטים בגיאומטריה</h1>
+    <p id="subhead">מבוסס על דף הנוסחאות והמשפטים</p>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer class="hint" id="hint"></footer>
+</div>
+
+<script>
+const TOPICS = {
+  sim:   { name: "דמיון משולשים",      color: "#4472C4" },
+  cong:  { name: "חפיפת משולשים",      color: "#548235" },
+  iso:   { name: "משולש שווה-שוקיים",  color: "#BF8F00" },
+  right: { name: "משולש ישר-זווית",    color: "#C00000" },
+  para:  { name: "מקבילית",            color: "#7030A0" },
+  trap:  { name: "טרפז",               color: "#2E75B6" },
+  rhom:  { name: "מעוין",              color: "#E36C09" },
+  rect:  { name: "מלבן",               color: "#31859C" },
+  sq:    { name: "ריבוע",              color: "#833C00" },
+  kite:  { name: "דלתון",              color: "#7F6000" },
+  area:  { name: "נוסחאות שטח",        color: "#595959" },
+};
+
+const QUESTIONS = [
+  { t:"sim", q:"מהו משפט הדמיון \"זווית-זווית\" (ז.ז)?", opts:[
+      "שתי זוויות במשולש אחד שוות לשתי זוויות במשולש השני",
+      "שתי צלעות שוות בשני המשולשים",
+      "יש זווית ישרה בשני המשולשים",
+      "השטחים שווים"], correct:0,
+      exGood:"נכון. שוויון של שתי זוויות מבטיח שגם הזווית השלישית שווה — ולכן דמיון.",
+      exBad:"משפט ז.ז דורש שתי זוויות שוות, לא צלעות או שטח." },
+
+  { t:"sim", q:"יחס הדמיון בין שני משולשים דומים הוא 1:4. מה יחס השטחים ביניהם?", opts:[
+      "1:4","1:8","1:16","1:2"], correct:2,
+      exGood:"נכון. יחס השטחים תמיד שווה לריבוע יחס הדמיון: 4²=16.",
+      exBad:"יחס השטחים = ריבוע יחס הדמיון, כלומר 4²=16, לא היחס הרגיל." },
+
+  { t:"sim", q:"קטע אמצעים במשולש (המחבר בין אמצעי שתי צלעות)...", opts:[
+      "מאונך לצלע השלישית",
+      "מקביל לצלע השלישית ושווה למחציתה",
+      "שווה בדיוק לצלע השלישית",
+      "חוצה את הזווית שממול"], correct:1,
+      exGood:"נכון — זהו בדיוק משפט קטע האמצעים.",
+      exBad:"קטע האמצעים מקביל לצלע השלישית וגם שווה למחציתה — לא מאונך ולא שווה לה במלואה." },
+
+  { t:"cong", q:"אם שני משולשים חופפים, מה בהכרח נכון?", opts:[
+      "רק הזוויות שוות",
+      "כל הצלעות, כל הזוויות, השטח וההיקף — כולם שווים",
+      "רק השטח שווה",
+      "הם בהכרח גם דומים לצורה שלישית"], correct:1,
+      exGood:"נכון — חפיפה פירושה זהות מלאה בגודל ובצורה.",
+      exBad:"חפיפה חזקה מדמיון: היא מבטיחה שוויון מלא של צלעות, זוויות, שטח והיקף." },
+
+  { t:"iso", q:"במשולש שווה-שוקיים ABC (AB=AC), הקטע מ-A לאמצע BC הוא:", opts:[
+      "רק התיכון לבסיס",
+      "התיכון, הגובה וחוצה-הזווית — כולם אותו קטע בדיוק",
+      "רק הגובה לבסיס",
+      "רק חוצה הזווית מ-A"], correct:1,
+      exGood:"נכון — זו התכונה המרכזית והשימושית ביותר של משולש שווה-שוקיים.",
+      exBad:"בסימטריה של משולש שווה-שוקיים, שלושת הקטעים (תיכון, גובה, חוצה-זווית) מתלכדים לקטע אחד." },
+
+  { t:"iso", q:"איזו מהבאות *אינה* דרך תקפה להוכיח שמשולש הוא שווה-שוקיים?", opts:[
+      "שתי זוויות במשולש שוות",
+      "התיכון לצלע מסוימת הוא גם הגובה אליה",
+      "יש במשולש זווית של 90°",
+      "הגובה לצלע הוא גם חוצה הזווית שממול לה"], correct:2,
+      exGood:"נכון — זווית ישרה קשורה למשולש ישר-זווית, לא ערובה למשולש שווה-שוקיים.",
+      exBad:"זווית ישרה לבדה לא אומרת כלום על שוויון צלעות. שלוש האפשרויות האחרות הן כולן תנאים מספיקים תקפים." },
+
+  { t:"right", q:"התיכון ליתר במשולש ישר-זווית שווה ל:", opts:[
+      "כל אורך היתר","מחצית אורך היתר","שליש אורך היתר","תלוי בגודל הניצבים"], correct:1,
+      exGood:"נכון — משפט התיכון ליתר: AM = ½BC = BM = CM.",
+      exBad:"משפט התיכון ליתר קובע שהתיכון שווה בדיוק למחצית היתר, בכל משולש ישר-זווית." },
+
+  { t:"right", q:"במשולש ישר-זווית עם ניצבים 9 ו-12, אורך היתר הוא:", opts:[
+      "21","15","108","13"], correct:1,
+      exGood:"נכון — √(9²+12²) = √(81+144) = √225 = 15.",
+      exBad:"לפי פיתגורס: √(9²+12²)=√225=15." },
+
+  { t:"right", q:"במשולש 30°-60°-90°, הניצב שמול זווית 30° שווה ל:", opts:[
+      "מחצית היתר","שני-שליש היתר","אותו אורך כמו הניצב השני","אין נוסחה קבועה"], correct:0,
+      exGood:"נכון — זו תכונה ייחודית וקבועה למשולש 30-60-90.",
+      exBad:"בכל משולש 30-60-90, הניצב שמול זווית 30° הוא תמיד בדיוק מחצית מהיתר." },
+
+  { t:"para", q:"איזה מהבאים *אינו* תנאי מספיק להוכחת מקבילית?", opts:[
+      "האלכסונים חוצים זה את זה",
+      "שני זוגות צלעות סמוכות שוות",
+      "שני זוגות זוויות נגדיות שוות",
+      "שני זוגות צלעות נגדיות שוות"], correct:1,
+      exGood:"נכון — צלעות סמוכות שוות היא תכונת דלתון, לא מקבילית.",
+      exBad:"שני זוגות צלעות סמוכות שוות מאפיינים דלתון, לא מקבילית. שלוש האפשרויות האחרות כן מוכיחות מקבילית." },
+
+  { t:"trap", q:"קטע האמצעים בטרפז שווה ל:", opts:[
+      "סכום הבסיסים","מחצית סכום הבסיסים","הפרש הבסיסים","הבסיס הגדול בלבד"], correct:1,
+      exGood:"נכון — (בסיס גדול + בסיס קטן) ÷ 2.",
+      exBad:"קטע האמצעים בטרפז שווה למחצית סכום שני הבסיסים, לא לסכום המלא." },
+
+  { t:"trap", q:"בטרפז שווה-שוקיים, מה נכון?", opts:[
+      "האלכסונים מאונכים זה לזה",
+      "זוויות הבסיס שוות והאלכסונים שווים באורכם",
+      "יש לו זווית ישרה אחת בלבד",
+      "הוא תמיד גם מקבילית"], correct:1,
+      exGood:"נכון — אלה שתי התכונות המזהות של טרפז שווה-שוקיים.",
+      exBad:"בטרפז שווה-שוקיים: זוויות הבסיס שוות (בכל בסיס) והאלכסונים שווים באורכם — לא מאונכים." },
+
+  { t:"rhom", q:"איזו מהבאות *אינה* בהכרח תכונה של מעוין?", opts:[
+      "כל הצלעות שוות","האלכסונים מאונכים זה לזה","האלכסונים שווים באורכם","האלכסונים חוצים את זוויות הקודקוד"], correct:2,
+      exGood:"נכון — אלכסונים שווים הם תכונת מלבן, לא מעוין (אלא אם זה גם ריבוע).",
+      exBad:"אלכסונים שווים באורכם הם תכונה של מלבן. מעוין מבטיח דווקא אלכסונים מאונכים." },
+
+  { t:"rhom", q:"מקבילית שבה אלכסון אחד חוצה זווית קודקוד — היא בהכרח:", opts:[
+      "מלבן","מעוין","דלתון","טרפז שווה-שוקיים"], correct:1,
+      exGood:"נכון — זהו אחד מתנאי ההוכחה המספיקים למעוין.",
+      exBad:"מקבילית שבה אלכסון חוצה זווית היא תמיד מעוין." },
+
+  { t:"rect", q:"תנאי מספיק להוכיח שמקבילית היא מלבן:", opts:[
+      "כל הצלעות שוות","האלכסונים שווים באורכם","האלכסונים מאונכים","יש בה שתי צלעות סמוכות שוות"], correct:1,
+      exGood:"נכון — מקבילית עם אלכסונים שווים היא תמיד מלבן.",
+      exBad:"אלכסונים שווים הם התנאי המזהה מלבן. צלעות שוות/אלכסונים מאונכים שייכים למעוין." },
+
+  { t:"rect", q:"במלבן, מה בהכרח נכון על האלכסונים?", opts:[
+      "מאונכים זה לזה","חוצים זוויות קודקוד","שווים באורכם וגם חוצים זה את זה","אינם נחתכים"], correct:2,
+      exGood:"נכון — מלבן הוא גם מקבילית (חוצים זה את זה) ובנוסף האלכסונים שווים.",
+      exBad:"במלבן האלכסונים שווים באורכם וחוצים זה את זה (ירושה ממקבילית) — לא בהכרח מאונכים." },
+
+  { t:"sq", q:"ריבוע הוא בו-זמנית:", opts:[
+      "רק מלבן","רק מעוין","גם מלבן וגם מעוין","אף אחד מהם"], correct:2,
+      exGood:"נכון — ריבוע משלב את כל התכונות של מלבן ושל מעוין יחד.",
+      exBad:"ריבוע הוא גם מלבן (כל הזוויות ישרות) וגם מעוין (כל הצלעות שוות) בו-זמנית." },
+
+  { t:"sq", q:"מלבן הופך לריבוע כאשר מוסיפים את התנאי:", opts:[
+      "יש בו שתי צלעות סמוכות שוות","האלכסונים שלו שונים באורך","יש בו זווית קהה","שום תנאי לא הופך מלבן לריבוע"], correct:0,
+      exGood:"נכון — זהו אחד מתנאי ההוכחה המספיקים לריבוע.",
+      exBad:"מלבן עם שתי צלעות סמוכות שוות (או אלכסונים מאונכים) הופך לריבוע." },
+
+  { t:"kite", q:"תכונת היסוד של דלתון (ההגדרה שלו):", opts:[
+      "כל הצלעות שוות","שני זוגות צלעות נגדיות שוות","שני זוגות צלעות סמוכות שוות","האלכסונים שווים"], correct:2,
+      exGood:"נכון — שני זוגות צלעות סמוכות (לא נגדיות!) שוות זו הגדרת הדלתון.",
+      exBad:"בדלתון הצלעות השוות הן זוגות סמוכים, לא נגדיים כמו במקבילית." },
+
+  { t:"kite", q:"בדלתון, איזה אלכסון הוא ציר הסימטריה?", opts:[
+      "זה שמחבר בין קודקודי שתי הזוויות השוות",
+      "זה שמחבר בין קודקודי הזוויות ה'לא-שוות'",
+      "שני האלכסונים באותה מידה",
+      "אין ציר סימטריה בדלתון"], correct:1,
+      exGood:"נכון — האלכסון בין הזוויות השונות חוצה גם אותן וגם את האלכסון השני.",
+      exBad:"ציר הסימטריה של הדלתון הוא האלכסון שמחבר בין קודקודי הזוויות ה'לא-שוות' — הוא זה שחוצה זוויות." },
+
+  { t:"area", q:"שטח מעוין (או כל מרובע עם אלכסונים ניצבים) מחושב לפי:", opts:[
+      "אורך כפול רוחב","בסיס כפול גובה","מחצית מכפלת האלכסונים","היקף חלקי 4"], correct:2,
+      exGood:"נכון — S = ½ · אלכסון₁ · אלכסון₂.",
+      exBad:"לכל מרובע עם אלכסונים ניצבים (כולל מעוין): S = ½ · מכפלת האלכסונים." },
+
+  { t:"area", q:"שטח טרפז מחושב לפי:", opts:[
+      "בסיס כפול גובה","מחצית סכום הבסיסים כפול הגובה","מכפלת שני הבסיסים","סכום הבסיסים בלבד"], correct:1,
+      exGood:"נכון — S = ½ · (בסיס גדול + בסיס קטן) · גובה.",
+      exBad:"נוסחת שטח הטרפז: מחצית סכום הבסיסים, כפול הגובה." },
+];
+
+let current = 0;
+let score = 0;
+let locked = false;
+const answers = new Array(QUESTIONS.length).fill(null); // selected option index per question, or null
+const perTopic = {}; // topicKey -> {correct, total}
+
+function shade(hex, amt){
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const mix = c => Math.round(c + (255-c)*amt).toString(16).padStart(2,"0");
+  return "#" + mix(r) + mix(g) + mix(b);
+}
+
+function renderStart(){
+  const card = document.getElementById("card");
+  document.getElementById("subhead").textContent = "מבוסס על דף הנוסחאות והמשפטים";
+  document.getElementById("hint").textContent = "";
+  const chips = Object.values(TOPICS).map(t =>
+    `<span class="chip" style="background:${t.color}">${t.name}</span>`).join("");
+  card.className = "card start-card";
+  card.innerHTML = `
+    <div class="big-num">${QUESTIONS.length}</div>
+    <div class="big-label">שאלות רב-ברירה, ${Object.keys(TOPICS).length} נושאים</div>
+    <div class="topic-chips">${chips}</div>
+    <button class="btn btn-primary" id="startBtn">התחילו את המבחן</button>
+  `;
+  document.getElementById("startBtn").onclick = () => {
+    current=0; score=0; locked=false;
+    answers.fill(null);
+    Object.keys(perTopic).forEach(k=>delete perTopic[k]);
+    renderQuestion();
+  };
+}
+
+function renderQuestion(){
+  const card = document.getElementById("card");
+  card.className = "card";
+  const item = QUESTIONS[current];
+  const topic = TOPICS[item.t];
+  const alreadyAnswered = answers[current] !== null;
+  locked = alreadyAnswered;
+
+  document.getElementById("subhead").textContent = "מבחן אינטראקטיבי בעיצומו";
+  document.getElementById("hint").textContent = alreadyAnswered
+    ? "אפשר לחזור לשאלה קודמת או להמשיך הלאה"
+    : "בחרו תשובה כדי לראות הסבר";
+
+  const letters = ["א","ב","ג","ד"];
+  const optsHtml = item.opts.map((o,i) => {
+    let cls = "option";
+    if(alreadyAnswered){
+      cls += " locked";
+      if(i === item.correct) cls += " correct";
+      else if(i === answers[current]) cls += " wrong";
+      else cls += " dim";
+    }
+    return `
+    <button class="${cls}" data-i="${i}">
+      <span class="option-text">${o}</span>
+      <span class="letter">${letters[i]}</span>
+    </button>`;
+  }).join("");
+
+  const navHtml = `
+    <div class="nav-row">
+      ${current > 0 ? `<button class="btn btn-ghost" id="prevBtn">◀ &nbsp;שאלה קודמת</button>` : `<span></span>`}
+      <button class="btn btn-primary" id="nextBtn" style="background:${topic.color}">
+        ${current === QUESTIONS.length-1 ? "לתוצאות הסופיות" : "השאלה הבאה"} &nbsp;▶
+      </button>
+    </div>`;
+
+  card.innerHTML = `
+    <div class="progress-row">
+      <span class="qcount">שאלה ${current+1} מתוך ${QUESTIONS.length}</span>
+      <span class="topic-pill" style="background:${topic.color}">${topic.name}</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${(current/QUESTIONS.length)*100}%; background:${topic.color}"></div>
+    </div>
+    <p class="question">${item.q}</p>
+    <div class="options">${optsHtml}</div>
+    <div class="explain ${alreadyAnswered ? 'show ' + (answers[current]===item.correct ? 'good':'bad') : ''}" id="explain">
+      ${alreadyAnswered ? `<b>${answers[current]===item.correct ? "נכון!" : "לא בדיוק."}</b>${answers[current]===item.correct ? item.exGood : item.exBad}` : ""}
+    </div>
+    <div class="next-row ${alreadyAnswered ? 'show' : ''}" id="nextRow">${navHtml}</div>
+  `;
+
+  if(!alreadyAnswered){
+    card.querySelectorAll(".option").forEach(btn => {
+      btn.addEventListener("click", () => selectOption(btn, item));
+    });
+  }
+  const prevBtn = document.getElementById("prevBtn");
+  if(prevBtn) prevBtn.addEventListener("click", () => { current--; renderQuestion(); });
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    current++;
+    if(current < QUESTIONS.length) renderQuestion(); else renderResults();
+  });
+}
+
+function selectOption(btn, item){
+  if(locked) return;
+  locked = true;
+  const i = parseInt(btn.dataset.i, 10);
+  const correct = i === item.correct;
+  answers[current] = i;
+  if(!perTopic[item.t]) perTopic[item.t] = {correct:0, total:0};
+  perTopic[item.t].total++;
+  if(correct){ score++; perTopic[item.t].correct++; }
+
+  document.querySelectorAll(".option").forEach(o => {
+    o.classList.add("locked");
+    const oi = parseInt(o.dataset.i, 10);
+    if(oi === item.correct) o.classList.add("correct");
+    else if(oi === i) o.classList.add("wrong");
+    else o.classList.add("dim");
+  });
+
+  const ex = document.getElementById("explain");
+  ex.classList.add("show", correct ? "good" : "bad");
+  ex.innerHTML = `<b>${correct ? "נכון!" : "לא בדיוק."}</b>${correct ? item.exGood : item.exBad}`;
+
+  document.getElementById("nextRow").classList.add("show");
+}
+
+function renderResults(){
+  const card = document.getElementById("card");
+  card.className = "card results";
+  document.getElementById("subhead").textContent = "התוצאות שלכם";
+  document.getElementById("hint").textContent = "";
+  const pct = Math.round((score/QUESTIONS.length)*100);
+
+  let msg;
+  if(pct === 100) msg = "מושלם! שליטה מלאה בכל המשפטים.";
+  else if(pct >= 80) msg = "מצוין! את/ה כמעט מוכנ/ה למבחן.";
+  else if(pct >= 60) msg = "לא רע — כדאי לחזור על הנושאים החלשים.";
+  else msg = "כדאי לעבור שוב על דף הנוסחאות לפני המבחן.";
+
+  const rows = Object.keys(TOPICS).map(key => {
+    const t = TOPICS[key];
+    const d = perTopic[key];
+    if(!d) return "";
+    const p = Math.round((d.correct/d.total)*100);
+    return `
+      <div class="tb-row">
+        <span class="tb-name">${t.name}</span>
+        <div class="tb-bar-track"><div class="tb-bar-fill" style="width:${p}%; background:${t.color}"></div></div>
+        <span class="tb-frac">${d.correct}/${d.total}</span>
+      </div>`;
+  }).join("");
+
+  card.innerHTML = `
+    <div class="score-circle" style="--pct:${pct}">
+      <div class="score-circle-inner">
+        <span class="pct">${pct}%</span>
+        <span class="frac">${score}/${QUESTIONS.length}</span>
+      </div>
+    </div>
+    <h2>סיימת את המבחן!</h2>
+    <div class="msg">${msg}</div>
+    <div class="topic-breakdown">${rows}</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="restartBtn">נסו שוב</button>
+    </div>
+  `;
+  document.getElementById("restartBtn").addEventListener("click", renderStart);
+}
+
+renderStart();
+</script>
+</body>
+</html>
